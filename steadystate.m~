@@ -1,4 +1,4 @@
-%% STABILITY ANALYSIS CODE - for sick with drug treatment
+%% STABILITY ANALYSIS CODE
 
 % this is for our code when there is 
 
@@ -27,7 +27,7 @@ dxdt = [
  J=jacobian(dxdt,[p m s d]);
  
  % This handy fuction will takr our function and find its steady state vals
- y_steadystate=fsolve(@modelVI_nodelay, [0; 0.9; 0;0])
+ y_steadystate=fsolve(@function1, [0; 0.9; 0;0])
  % Take those values and evaluate the jacobian at steady state
  J_eval=subs(J,[p m s d],  y_steadystate');
  % find the eigen values of this matrix
@@ -35,9 +35,7 @@ dxdt = [
  approx_vals=vpa(vals);
 STABILITY=[ approx_vals(1,1);approx_vals(2,2); approx_vals(3,3);approx_vals(4,4)]
 
-    % note that these values completely agree with our model
-    % we should figure out why the drug doesnt have and imaginary part
-    
+    % note that these values completely
 
 %% mdm2 inhibitor
 
@@ -87,6 +85,6 @@ end
 
 
 figure(2)
-plot(timepoints, fullSol(1,:), timepoints, fullSol(2,:),timepoints, fullSol(3,:))
-legend('p53', 'mdm2', 'Signal');
+plot(timepoints, fullSol(1,:), timepoints, fullSol(2,:))
+legend('p53', 'mdm2');
 title('Tumor Conditions with Drug taken every 24 hrs');
