@@ -1,14 +1,15 @@
-function [dxdt] = modelVI(t, x, tau)
+function [dxdt] = modelVI(t, x, tau, c)
 
-Bx = .9;
-By = 1;
-ax = 0;
-ay = .7;
-axy = 1.4;
-as = 2.7;
-Bs = 0.9;
-noise = 1;
-n = 4;
+Bx = c(1);
+By = c(2);
+ax = c(3);
+ay = c(4);
+axy = c(5);
+as = c(6);
+Bs = c(7);
+noise = c(8);
+n = c(9);
+
 
 dxdt = [
         Bx * (x(3)^n)/((x(3)^n) + 1) *noise - (axy * x(2) * x(1));
