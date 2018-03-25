@@ -1,4 +1,4 @@
-function [dxdt] = modelVI_nodelay(x)
+function [dxdt] = modelVI_nodelay(x, c)
 
 
 Bx = .9;
