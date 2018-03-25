@@ -33,7 +33,7 @@ dxdt = [
  % find the eigen values of this matrix
  [vectors,vals]=eig(J_eval);
  approx_vals=vpa(vals);
-STABILITY=[ approx_vals(1,1);approx_vals(2,2); approx_vals(3,3);approx_vals(4,4)]
+STABILITY = [ approx_vals(1,1);approx_vals(2,2); approx_vals(3,3);approx_vals(4,4)]
 
     % note that these values completely agree with our model
     % we should figure out why the drug doesnt have and imaginary part
