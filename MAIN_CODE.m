@@ -54,7 +54,10 @@ J=jacobian(dxdt,[p m s]);
  
 % This handy fuction will take our function and find its steady state
 % values given the initial conditions
-y_steadystate = fsolve(@modelVI_nodelay_noDrug, history, '', c)
+y_steadystate = fsolve(@modelVI_nodelay_noDrug, history, '', c);
+disp(strcat(['Steady state values for healthy system with delay for p53,'...
+    , 'mdm2, and signal are: ']));
+disp(y_steadystate);
  
 % Take those values and evaluate the jacobian at steady state
 J_eval=  subs(J,[p m s],  y_steadystate');
@@ -122,24 +125,59 @@ plot(timepoints, signalHistory, 'b', 'LineWidth', 2);
 legend('Signal');
 title('Flipping signal conditions');
 
-%% mdm2 inhibitor
+%% Tumor onset
+% In this case, the degradation rate of mdm2 is lower, such that the 
+% system favors repression of p53 without oscialltion. 
 
-% Change degradation rate of mdm2 such that is overpowers p53
-
-
-Bx = .9;
-By = 1;
-ax = 0;
+Bs = 0.9;
 ay = 0.2;
-axy = 1.4;
-as = 2.7;
-Bs = 10;
-noise = 1;
-n = 4;
-Bx = 1 * Bx;
-ayd = 10;
-ad = 0.5;
 
+c = [Bx; By; ax; ay; axy; as; Bs; noise; n];
+history = [0; 0.9; 0];
+tspan = [0 30];
+
+sol = dde23(@modelVI, lags, history, tspan, '', c);
+
+figure(4)
+plot(sol.x, sol.y(1,:), sol.x, sol.y(2,:), 'LineWidth', 2)
+legend('p53', 'mdm2');
+title('Tumor Conditions: low mdm2 degradation');
+xlabel('Time (hours)');
+ylabel('Concentration');
+
+%% Stability analysis of tumor conditions
+
+syms p m s
+dxdt = [
+        Bx * (s^n)/((s^n) + 1) *noise - (axy * m * p);
+        By*p * noise - (ay * m);
+        Bs - as*m*s];
+   
+J=jacobian(dxdt,[p m s]);
+ 
+% This handy fuction will take our function and find its steady state
+% values given the initial conditions
+y_steadystate = fsolve(@modelVI_nodelay_noDrug, history, '', c);
+disp('Steady state values under tumor conditions for p53, mdm2, and signal');
+disp(y_steadystate);
+ 
+% Take those values and evaluate the jacobian at steady state
+J_eval = subs(J,[p m s],  y_steadystate');
+ 
+% find the eigen values of this matrix
+evals = double(eig(J_eval));
+ 
+disp('The eigenvalues of the tumor condition system are: ');
+disp(evals);
+
+%% Drug application to restore healthy levels of p53
+% Here, we take the tumor onset case and add another element; the drug
+% increases degradation of mdm2 either by tagging for degradation or 
+% directly damaging and inactivation mdm2 to allow p53 to reach native 
+% levels.
+
+ayd = 0.1;
+ad = 0.2;
 
 c = [Bx; By; ax; ay; axy; as; Bs; noise; n; ayd; ad];
 
@@ -169,26 +207,16 @@ for i = 1:flips
 end
 
 
-figure(2)
-plot(timepoints, fullSol(1,:), timepoints, fullSol(2,:),timepoints, fullSol(3,:))
-legend('p53', 'mdm2', 'Signal');
-title('Tumor Conditions with Drug taken every 24 hrs');
+figure(5)
+plot(timepoints, fullSol(1,:), timepoints, fullSol(2,:),'LineWidth', 2)
+legend('p53', 'mdm2');
+title('Tumor Conditions with drug at 24h and successive 24h');
+xlabel('Time (hours');
+ylabel('Concentration');
 
-%% STABILITY ANALYSIS CODE - for sick with drug treatment
-
-%So we load in all of our info 
-Bx = .9;
-By = 1;
-ax = 0;
-ay = 0.2;
-axy = 1.4;
-as = 2.7;
-Bs = 10;
-noise = 1;
-n = 4;
-Bx = 1 * Bx;
-ayd = 10;
-ad = 0.5;
+%% Stability analysis for tumor condition with drug
+% Here we determine if and how the drug might affect the overall stability
+% of our system
 
 %find the jaconbian in symbolic terms
 syms p m s d
@@ -197,20 +225,27 @@ dxdt = [
         By*p * noise - (ay * m) -  (ayd * m * d);
         Bs - as*m*s;
         -ad*d ];
+    
  J=jacobian(dxdt,[p m s d]);
  
- % This handy fuction will takr our function and find its steady state vals
- y_steadystate=fsolve(@modelVI_nodelay, [0; 0.9; 0;0])
+ % This handy fuction will take our function and find its steady state vals
+ y_steadystate = fsolve(@modelVI_nodelay, [0; 0.9; 0; 10], '', c);
+ disp(strcat(['Steady state values under tumor condition with a single',...
+     'drug dose for p53, mdm2, signal, and drug concentration are: ']));
+ disp(y_steadystate);
+ 
  % Take those values and evaluate the jacobian at steady state
  J_eval=subs(J,[p m s d],  y_steadystate');
+ 
  % find the eigen values of this matrix
- [vectors,vals]=eig(J_eval);
- approx_vals=vpa(vals);
-STABILITY = [ approx_vals(1,1);approx_vals(2,2); approx_vals(3,3);approx_vals(4,4)]
+ evals = double(eig(J_eval));
+ 
+ 
+disp('The eigenvalues of the tumor condition system with a single drug dose are: ');
+disp(evals);
 
     % note that these values completely agree with our model
     % we should figure out why the drug doesnt have and imaginary part
     
-
 
 

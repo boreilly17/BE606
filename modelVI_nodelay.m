@@ -1,19 +1,17 @@
 function [dxdt] = modelVI_nodelay(x, c)
 
 
-Bx = .9;
-By = 1;
-ax = 0;
-ay = 0.2;
-axy = 1.4;
-as = 2.7;
-Bs = 10;
-noise = 1;
-n = 4;
-Bx = 1 * Bx;
-ayd = 10;
-ad = 0.5;
-
+Bx = c(1);
+By = c(2);
+ax = c(3);
+ay = c(4);
+axy = c(5);
+as = c(6);
+Bs = c(7);
+noise = c(8);
+n = c(9);
+ayd = c(10);
+ad = c(11);
 
 dxdt = [
         Bx * (x(3)^n)/((x(3)^n) + 1) *noise - (axy * x(2) * x(1));
